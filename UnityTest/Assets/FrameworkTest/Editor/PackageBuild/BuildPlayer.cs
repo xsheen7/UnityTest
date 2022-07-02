@@ -44,8 +44,8 @@ public class BuildPlayer : Editor
         AssetBundleManifest manifest = BuildPipeline.BuildAssetBundles(outputPath, buildOption, buildTarget);
         if (manifest != null && writeConfig)
         {
-            AssetsPathMappingEditor.BuildPathMapping(manifest);
-            VariantMappingEditor.BuildVariantMapping(manifest);
+            // AssetsPathMappingEditor.BuildPathMapping(manifest);
+            // VariantMappingEditor.BuildVariantMapping(manifest);
             BuildPipeline.BuildAssetBundles(outputPath, buildOption, buildTarget);
         }
         WritePackageNameFile(buildTarget, channelName);
