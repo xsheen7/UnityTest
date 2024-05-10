@@ -36,6 +36,8 @@ namespace UnityFigmaBridge.Editor.Utils
         /// Asset folder to store server rendered images
         /// </summary>
         public static string FigmaServerRenderedImagesFolder = $"{FigmaAssetsRootFolder}/ServerRenderedImages";
+        
+        public static string FigmaServerExportImageFolder = $"{FigmaAssetsRootFolder}/ExportImages";
 
         /// <summary>
         /// Asset folder to store Font material presets
@@ -52,21 +54,25 @@ namespace UnityFigmaBridge.Editor.Utils
         {
             return $"{FigmaPaths.FigmaImageFillFolder}/{imageId}.png";
         }
+        
+        public static string GetPathForExportImage(string nodeName)
+        {
+            return $"{FigmaServerExportImageFolder}/{nodeName}.png";
+        }
 
         public static string GetPathForServerRenderedImage(string nodeId,
             List<ServerRenderNodeData> serverRenderNodeData)
         {
             var matchingEntry = serverRenderNodeData.FirstOrDefault((node) => node.SourceNode.id == nodeId);
             
-            return $"{FigmaPaths.FigmaServerRenderedImagesFolder}/{matchingEntry.SourceNode.name}.png";
-            // switch (matchingEntry.RenderType)
-            // {
-            //     // case ServerRenderType.Export:
-            //         return $"Assets/{matchingEntry.SourceNode.name}.png";
-            //     // default:
-            //     //     var safeNodeId = FigmaDataUtils.ReplaceUnsafeFileCharactersForNodeId(nodeId);
-            //     //     return $"{FigmaPaths.FigmaServerRenderedImagesFolder}/{safeNodeId}.png";
-            // }
+            switch (matchingEntry.RenderType)
+            {
+                case ServerRenderType.Export:
+                    return $"{FigmaServerRenderedImagesFolder}/{matchingEntry.SourceNode.name}.png";
+                default:
+                    var safeNodeId = FigmaDataUtils.ReplaceUnsafeFileCharactersForNodeId(nodeId);
+                    return $"{FigmaPaths.FigmaServerRenderedImagesFolder}/{safeNodeId}.png";
+            }
         }
 
         public static string GetPathForScreenPrefab(Node node, int duplicateCount)
@@ -167,5 +173,7 @@ namespace UnityFigmaBridge.Editor.Utils
                 Directory.CreateDirectory(FigmaFontsFolder);
             }
         }
+
+        public static Dictionary<string, string> imageExportReferDic = new Dictionary<string, string>();
     }
 }

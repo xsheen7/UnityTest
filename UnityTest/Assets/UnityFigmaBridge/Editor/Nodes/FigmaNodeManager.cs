@@ -2,9 +2,11 @@
 using TMPro;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 using UnityFigmaBridge.Editor.FigmaApi;
 using UnityFigmaBridge.Editor.Fonts;
+using UnityFigmaBridge.Editor.Settings;
 using UnityFigmaBridge.Editor.Utils;
 using UnityFigmaBridge.Runtime.UI;
 using Color = UnityEngine.Color;
@@ -94,8 +96,17 @@ namespace UnityFigmaBridge.Editor.Nodes
                 case NodeType.TEXT:
                     // Get the best fit TextMeshPro font this font (handled when document processed)
                     var text = nodeGameObject.GetComponent<TextMeshProUGUI>();
+                    
                     var matchingFontMapping = figmaImportProcessData.FontMap.GetFontMapping(node.style.fontFamily, node.style.fontWeight);
-                    text.font = matchingFontMapping.FontAsset;
+
+                    if (UnityFigmaBridgeImporter.UnityFigmaBridgeSettings.GameFont != null)
+                    {
+                        text.font = UnityFigmaBridgeImporter.UnityFigmaBridgeSettings.GameFont;
+                    }
+                    else
+                    {
+                        text.font = matchingFontMapping.FontAsset;
+                    }
                     
                     text.text = node.characters;
                     text.color = FigmaDataUtils.GetUnityFillColor(node.fills[0]);
@@ -311,8 +322,12 @@ namespace UnityFigmaBridge.Editor.Nodes
         private static void SetupImageFill(FigmaImage figmaImage,Paint fill)
         {
             // Assign image fill, load from asset database
-            figmaImage.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(
-                    FigmaPaths.GetPathForImageFill(fill.imageRef));
+            FigmaPaths.imageExportReferDic.TryGetValue(fill.imageRef, out string path);
+            if (string.IsNullOrEmpty(path))
+            {
+                path = FigmaPaths.GetPathForImageFill(fill.imageRef);
+            }
+            figmaImage.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
 
             switch (fill.scaleMode)
             {
@@ -360,7 +375,12 @@ namespace UnityFigmaBridge.Editor.Nodes
                     break;
                 case NodeType.TEXT:
                     // For text nodes, we use TextMeshPro
-                    nodeGameObject.AddComponent<TextMeshProUGUI>();
+                    // if (UnityFigmaBridgeImporter.UnityFigmaBridgeSettings.UseTextMeshPro)
+                        nodeGameObject.AddComponent<TextMeshProUGUI>();
+                    // else
+                    // {
+                    //     nodeGameObject.AddComponent<Text>();
+                    // }
                     break;
                 case NodeType.DOCUMENT:
                     break;

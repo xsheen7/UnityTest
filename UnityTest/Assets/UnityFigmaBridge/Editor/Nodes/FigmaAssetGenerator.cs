@@ -156,7 +156,14 @@ namespace UnityFigmaBridge.Editor.Nodes
             if (matchingServerRenderEntry!=null)
             {
                 // Attach a simple image node (no need for custom renderer)
-                nodeGameObject.AddComponent<Image>().sprite = AssetDatabase.LoadAssetAtPath<Sprite>(FigmaPaths.GetPathForServerRenderedImage(figmaNode.id,figmaImportProcessData.ServerRenderNodes));
+                FigmaPaths.imageExportReferDic.TryGetValue(figmaNode.id, out string path);
+                if (string.IsNullOrEmpty(path))
+                {
+                    path = FigmaPaths.GetPathForServerRenderedImage(figmaNode.id,
+                        figmaImportProcessData.ServerRenderNodes);
+                }
+
+                nodeGameObject.AddComponent<Image>().sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
                 
                 // This could be a button, so check for prototype functionality
                 PrototypeFlowManager.ApplyPrototypeFunctionalityToNode(figmaNode, nodeGameObject, figmaImportProcessData);

@@ -12,14 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 119c1bd3601648f28a252a6030e067b6, type: 3}
   m_Name: UnityFigmaBridgeSettings
   m_EditorClassIdentifier: 
-  DocumentUrl: https://www.figma.com/design/DIhmjD8NcAF2UHf69y53fn/Figma-Unity-Bridge-Example?node-id=3-1288&t=3P8I8OyoZqVi32oY-0
+  DocumentUrl: https://www.figma.com/file/JcYcbU2NtURB3VbnWlhbm8/Figma-Unity-Bridge-Example-mine?type=design&node-id=0%3A1&mode=design&t=5lvjTlHHm3fk0i5T-1
   BuildPrototypeFlow: 0
   RunTimeAssetsScenePath: Assets/FigmaTest/Test.unity
   EnableAutoLayout: 0
   ScreenBindingNamespace: 
   ServerRenderImageScale: 3
-  EnableGoogleFontsDownloads: 1
+  EnableGoogleFontsDownloads: 0
   CreateScreenNameCSharpFile: 0
   GenerateNodesMarkedForExport: 1
-  OnlyImportSelectedPages: 0
-  PageDataList: []
+  GameFont: {fileID: 11400000, guid: 0161d805a3764c089bef00bfe00793f5, type: 2}
+  OnlyImportSelectedPages: 1
+  PageDataList:
+  - Name: Page 1
+    NodeId: 0:1
+    Selected: 0
+  - Name: Page 2
+    NodeId: 806:590
+    Selected: 1

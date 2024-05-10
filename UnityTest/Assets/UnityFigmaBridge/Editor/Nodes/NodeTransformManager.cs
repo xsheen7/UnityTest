@@ -144,12 +144,12 @@ namespace UnityFigmaBridge.Editor.Nodes
             targetRectTransform.sizeDelta = new Vector2(figmaNode.absoluteBoundingBox.width, figmaNode.absoluteBoundingBox.height);
 
             //Add a layout element and set its preferred size
-            LayoutElement layoutElement = targetRectTransform.gameObject.AddComponent<LayoutElement>();
-            layoutElement.preferredWidth = figmaNode.absoluteBoundingBox.width;
-            layoutElement.preferredHeight = figmaNode.absoluteBoundingBox.height;
-
-            layoutElement.minHeight = figmaNode.absoluteBoundingBox.height;
-            layoutElement.minWidth = figmaNode.absoluteBoundingBox.width;
+            // LayoutElement layoutElement = targetRectTransform.gameObject.AddComponent<LayoutElement>();
+            // layoutElement.preferredWidth = figmaNode.absoluteBoundingBox.width;
+            // layoutElement.preferredHeight = figmaNode.absoluteBoundingBox.height;
+            //
+            // layoutElement.minHeight = figmaNode.absoluteBoundingBox.height;
+            // layoutElement.minWidth = figmaNode.absoluteBoundingBox.width;
 
             // Position will be relative to parent absoluteBoundingBox (if it exists). Pages have no absoluteBoundingBox so assume pos of 0,0
             var figmaParentNodePosition = figmaParentNode.absoluteBoundingBox != null

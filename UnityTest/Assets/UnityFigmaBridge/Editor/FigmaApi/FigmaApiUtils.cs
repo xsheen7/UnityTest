@@ -11,7 +11,6 @@ using UnityFigmaBridge.Editor.Utils;
 
 namespace UnityFigmaBridge.Editor.FigmaApi
 {
-    
     /// <summary>
     /// Reason for server rendering
     /// </summary>
@@ -20,7 +19,7 @@ namespace UnityFigmaBridge.Editor.FigmaApi
         Substitution, // We want to replace a complex node with an image
         Export // We want to export this image
     }
-        
+
     /// <summary>
     /// Encapsulates server render node data
     /// </summary>
@@ -29,11 +28,11 @@ namespace UnityFigmaBridge.Editor.FigmaApi
         public ServerRenderType RenderType = ServerRenderType.Substitution;
         public Node SourceNode;
     }
-    
+
     public static class FigmaApiUtils
     {
-        private static string WRITE_FILE_PATH = "Assets/UnityFigmaBridge/FigmaOutput.json";
-        
+        private static string WRITE_FILE_PATH = "UnityFigmaBridge/FigmaOutput.json";
+
         /// <summary>
         /// Encapsulate download data
         /// </summary>
@@ -49,8 +48,6 @@ namespace UnityFigmaBridge.Editor.FigmaApi
             public string Url;
             public string FilePath;
         }
-        
-        
 
 
         /// <summary>
@@ -103,7 +100,7 @@ namespace UnityFigmaBridge.Editor.FigmaApi
                     MissingMemberHandling = MissingMemberHandling.Ignore,
                     NullValueHandling = NullValueHandling.Ignore,
                 };
-                
+
                 // Deserialize the document
                 figmaFile = JsonConvert.DeserializeObject<FigmaFile>(webRequest.downloadHandler.text, settings);
 
@@ -178,8 +175,10 @@ namespace UnityFigmaBridge.Editor.FigmaApi
 
             if (webRequest.result is UnityWebRequest.Result.ProtocolError or UnityWebRequest.Result.ConnectionError)
             {
-                throw new Exception($"Error downloading FIGMA Image Fill Data: {webRequest.error} url - {imageFillUrl}");
+                throw new Exception(
+                    $"Error downloading FIGMA Image Fill Data: {webRequest.error} url - {imageFillUrl}");
             }
+
             try
             {
                 imageFillData = JsonConvert.DeserializeObject<FigmaImageFillData>(webRequest.downloadHandler.text);
@@ -201,21 +200,23 @@ namespace UnityFigmaBridge.Editor.FigmaApi
         /// <param name="nodeIds">List of Node Ids to process</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static async Task<FigmaFileNodes> GetFigmaFileNodes(string fileId, string accessToken,List<string> nodeIds)
+        public static async Task<FigmaFileNodes> GetFigmaFileNodes(string fileId, string accessToken,
+            List<string> nodeIds)
         {
             FigmaFileNodes fileNodes;
-            var externalComponentsJoined = string.Join(",",nodeIds);
+            var externalComponentsJoined = string.Join(",", nodeIds);
             var componentsUrl = $"https://api.figma.com/v1/files/{fileId}/nodes/?ids={externalComponentsJoined}";
-            
+
             // Download the FIGMA Document
             var webRequest = UnityWebRequest.Get(componentsUrl);
-            webRequest.SetRequestHeader("X-Figma-Token",accessToken);
+            webRequest.SetRequestHeader("X-Figma-Token", accessToken);
             await webRequest.SendWebRequest();
 
             if (webRequest.result is UnityWebRequest.Result.ProtocolError or UnityWebRequest.Result.ConnectionError)
             {
                 throw new Exception($"Error downloading components: {webRequest.error} url - {componentsUrl}");
             }
+
             try
             {
                 fileNodes = JsonConvert.DeserializeObject<FigmaFileNodes>(webRequest.downloadHandler.text);
@@ -238,7 +239,9 @@ namespace UnityFigmaBridge.Editor.FigmaApi
         /// <param name="serverRenderData"></param>
         /// <param name="serverRenderNodes"></param>
         /// <returns></returns>
-        public static List<FigmaDownloadQueueItem> GenerateDownloadQueue(FigmaImageFillData imageFillData,List<string> foundImageFills,List<string> imageNames,List<FigmaServerRenderData> serverRenderData,List<ServerRenderNodeData> serverRenderNodes)
+        public static List<FigmaDownloadQueueItem> GenerateDownloadQueue(FigmaImageFillData imageFillData,
+            List<string> foundImageFills, List<FigmaServerRenderData> serverRenderData,
+            List<ServerRenderNodeData> serverRenderNodes, List<Node> exportNodes)
         {
             // Check if each image fill file has already been downloaded. If not, add to download list
             //Dictionary<string, string> filteredImageFillList = new Dictionary<string, string>();
@@ -246,23 +249,38 @@ namespace UnityFigmaBridge.Editor.FigmaApi
             foreach (var keyPair in imageFillData.meta.images)
             {
                 // Only download if it is used in the document and not already downloaded
-                if (foundImageFills.Contains(keyPair.Key))
+                if (foundImageFills.Contains(keyPair.Key) && !File.Exists(FigmaPaths.GetPathForImageFill(keyPair.Key)))
                 {
-                    int index = foundImageFills.IndexOf(keyPair.Key);
-                    if(!File.Exists(FigmaPaths.GetPathForImageFill(imageNames[index])))
+                    //导出的图片名字改为
+                    string path = FigmaPaths.GetPathForImageFill(keyPair.Key);
+                    foreach (var exportNode in exportNodes)
                     {
-                        downloadList.Add(new FigmaDownloadQueueItem
+                        if (exportNode.fills != null)
                         {
-                            Url=keyPair.Value,
-                            FilePath = FigmaPaths.GetPathForImageFill(imageNames[index]),
-                            FileType = FigmaDownloadQueueItem.FigmaFileType.ImageFill
-                        });
+                            foreach (var fill in exportNode.fills)
+                            {
+                                if (fill.imageRef == keyPair.Key)
+                                {
+                                    path = FigmaPaths.GetPathForExportImage(exportNode.name);
+                                    break;
+                                }
+                            }
+                        }
                     }
+
+                    FigmaPaths.imageExportReferDic.TryAdd(keyPair.Key, path);
+
+                    downloadList.Add(new FigmaDownloadQueueItem
+                    {
+                        Url = keyPair.Value,
+                        FilePath = path,
+                        FileType = FigmaDownloadQueueItem.FigmaFileType.ImageFill
+                    });
                 }
             }
 
             // If required, process server render images
-           foreach (var serverRenderDataEntry in serverRenderData)
+            foreach (var serverRenderDataEntry in serverRenderData)
             {
                 foreach (var keyPair in serverRenderDataEntry.images)
                 {
@@ -273,11 +291,25 @@ namespace UnityFigmaBridge.Editor.FigmaApi
                     }
                     else
                     {
+                        string path = FigmaPaths.GetPathForServerRenderedImage(keyPair.Key, serverRenderNodes);
+                        foreach (var exportNode in exportNodes)
+                        {
+                            if (exportNode.fills != null)
+                            {
+                                if (exportNode.id == keyPair.Key)
+                                {
+                                    path = FigmaPaths.GetPathForExportImage(exportNode.name);
+                                    FigmaPaths.imageExportReferDic.TryAdd(exportNode.id, path);
+                                    break;
+                                }
+                            }
+                        }
+
                         // Always overwrite as may have changed
                         downloadList.Add(new FigmaDownloadQueueItem
                         {
                             Url = keyPair.Value,
-                            FilePath = FigmaPaths.GetPathForServerRenderedImage(keyPair.Key, serverRenderNodes),
+                            FilePath = path,
                             FileType = FigmaDownloadQueueItem.FigmaFileType.ServerRenderedImage
                         });
                     }
@@ -286,41 +318,44 @@ namespace UnityFigmaBridge.Editor.FigmaApi
 
             return downloadList;
         }
-        
+
 
         /// <summary>
         /// Download required files and process
         /// </summary>
         /// <param name="downloadItems"></param>
-        public static async Task DownloadFiles(List<FigmaDownloadQueueItem> downloadItems, UnityFigmaBridgeSettings settings)
+        public static async Task DownloadFiles(List<FigmaDownloadQueueItem> downloadItems,
+            UnityFigmaBridgeSettings settings)
         {
             var downloadCount = downloadItems.Count;
             var downloadIndex = 0;
-            
+
             // Cycle through each required image and download
             foreach (var downloadItem in downloadItems)
             {
-                EditorUtility.DisplayProgressBar("Importing Figma Document", $"Downloading Server Image {downloadIndex}/{downloadCount}", (float)downloadIndex/(float) downloadCount);
+                EditorUtility.DisplayProgressBar("Importing Figma Document",
+                    $"Downloading Server Image {downloadIndex}/{downloadCount}",
+                    (float)downloadIndex / (float)downloadCount);
                 try
                 {
                     // Download and write the image data
                     var imageDownloadWebRequest = UnityWebRequest.Get(downloadItem.Url);
                     await imageDownloadWebRequest.SendWebRequest();
-                    
+
                     byte[] imageBytes = imageDownloadWebRequest.downloadHandler.data;
-                    
+
                     // Create the directory if needed
-                    var directoryPath= Path.GetDirectoryName(downloadItem.FilePath);
+                    var directoryPath = Path.GetDirectoryName(downloadItem.FilePath);
                     if (!Directory.Exists(directoryPath)) Directory.CreateDirectory(directoryPath);
-                    
-                    File.WriteAllBytes(downloadItem.FilePath,imageBytes);
-                    
+
+                    File.WriteAllBytes(downloadItem.FilePath, imageBytes);
+
                     // Refresh the asset database to ensure the asset has been created
                     AssetDatabase.ImportAsset(downloadItem.FilePath);
                     AssetDatabase.Refresh();
-                    
+
                     // Set the properties for the texture, to mark as a sprite and with alpha transparency and no compression
-                    TextureImporter textureImporter = (TextureImporter) AssetImporter.GetAtPath(downloadItem.FilePath);
+                    TextureImporter textureImporter = (TextureImporter)AssetImporter.GetAtPath(downloadItem.FilePath);
                     textureImporter.textureType = TextureImporterType.Sprite;
                     textureImporter.alphaIsTransparency = true;
                     textureImporter.mipmapEnabled = true; // We'll enable mip maps to stop issues at lower resolutions
@@ -338,21 +373,21 @@ namespace UnityFigmaBridge.Editor.FigmaApi
                             // For server rendered images we want to clamp the texture
                             textureImporter.wrapMode = TextureWrapMode.Clamp;
                             break;
-                            
                     }
-                    
-                    textureImporter.SaveAndReimport();
 
+                    textureImporter.SaveAndReimport();
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning($"Error downloading image file '{downloadItem.Url}' of type {downloadItem.FileType} for path {downloadItem.FilePath}: {e.ToString()}");
+                    Debug.LogWarning(
+                        $"Error downloading image file '{downloadItem.Url}' of type {downloadItem.FileType} for path {downloadItem.FilePath}: {e.ToString()}");
                 }
+
                 downloadIndex++;
             }
         }
 
-    
+
         /// <summary>
         /// Checks that existing assets are in the correct format
         /// </summary>

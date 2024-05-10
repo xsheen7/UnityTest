@@ -9,7 +9,6 @@ namespace UnityFigmaBridge.Editor.FigmaApi
     /// </summary>
     public static class FigmaDataUtils
     {
-        
         /// <summary>
         /// Converts from Figma Paint Fill Color to Unity color
         /// </summary>
@@ -18,8 +17,10 @@ namespace UnityFigmaBridge.Editor.FigmaApi
         public static UnityEngine.Color GetUnityFillColor(Paint paint)
         {
             // Make sure 
-            if(paint != null && !paint.visible) return new UnityEngine.Color(0,0,0,0);
-            return paint?.color == null ? new UnityEngine.Color(1,1,1,paint?.opacity ?? 1) : new UnityEngine.Color(paint.color.r, paint.color.g, paint.color.b, paint.color.a*paint.opacity);
+            if (paint != null && !paint.visible) return new UnityEngine.Color(0, 0, 0, 0);
+            return paint?.color == null
+                ? new UnityEngine.Color(1, 1, 1, paint?.opacity ?? 1)
+                : new UnityEngine.Color(paint.color.r, paint.color.g, paint.color.b, paint.color.a * paint.opacity);
         }
 
         /// <summary>
@@ -30,7 +31,7 @@ namespace UnityFigmaBridge.Editor.FigmaApi
         public static Gradient ToUnityGradient(Paint fill)
         {
             var figmaGradientStops = fill.gradientStops;
-            
+
             // Create array of keys for gradient color and alpha
             var unityColorKeys = new GradientColorKey[figmaGradientStops.Length];
             var unityAlphaKeys = new GradientAlphaKey[figmaGradientStops.Length];
@@ -41,7 +42,7 @@ namespace UnityFigmaBridge.Editor.FigmaApi
                 unityColorKeys[i].color = ToUnityColor(figmaGradientStops[i].color);
                 unityColorKeys[i].time = figmaGradientStops[i].position;
                 unityAlphaKeys[i].alpha = figmaGradientStops[i].color.a;
-                unityAlphaKeys[i].time=figmaGradientStops[i].position;
+                unityAlphaKeys[i].time = figmaGradientStops[i].position;
             }
 
             // Create new Unity gradient
@@ -52,7 +53,7 @@ namespace UnityFigmaBridge.Editor.FigmaApi
             gradient.SetKeys(unityColorKeys, unityAlphaKeys);
             return gradient;
         }
-        
+
         /// <summary>
         /// Convert Figma Vector2 to Unity Vector2
         /// </summary>
@@ -80,16 +81,17 @@ namespace UnityFigmaBridge.Editor.FigmaApi
         /// <returns></returns>
         public static Vector3[] ToUnityVector3Array(float[,] inputArray)
         {
-            var length=inputArray.GetLength(0);
+            var length = inputArray.GetLength(0);
             var outputArray = new Vector3[length];
             for (var i = 0; i < length; i++)
             {
-                outputArray[i] = new Vector3(inputArray[i,0], inputArray[i,1], inputArray[i,2]);
+                outputArray[i] = new Vector3(inputArray[i, 0], inputArray[i, 1], inputArray[i, 2]);
             }
+
             return outputArray;
         }
-        
-        
+
+
         /// <summary>
         /// Create a fast-lookup dictionary
         /// </summary>
@@ -126,11 +128,9 @@ namespace UnityFigmaBridge.Editor.FigmaApi
         /// <returns></returns>
         public static Node GetFigmaNodeWithId(FigmaFile file, string nodeId)
         {
-            return GetFigmaNodeInChildren(file.document,nodeId);
+            return GetFigmaNodeInChildren(file.document, nodeId);
         }
 
-
-      
 
         /// <summary>
         /// Find a specific figmaNode within figma figmaNode tree (recursive)
@@ -138,7 +138,7 @@ namespace UnityFigmaBridge.Editor.FigmaApi
         /// <param name="node"></param>
         /// <param name="nodeId"></param>
         /// <returns></returns>
-        public static Node GetFigmaNodeInChildren(Node node,string nodeId)
+        public static Node GetFigmaNodeInChildren(Node node, string nodeId)
         {
             if (node.children == null) return null;
             foreach (var childNode in node.children)
@@ -147,6 +147,7 @@ namespace UnityFigmaBridge.Editor.FigmaApi
                 var nodeFoundInChildren = GetFigmaNodeInChildren(childNode, nodeId);
                 if (nodeFoundInChildren != null) return nodeFoundInChildren;
             }
+
             // Not found
             return null;
         }
@@ -157,13 +158,13 @@ namespace UnityFigmaBridge.Editor.FigmaApi
         /// <param name="node"></param>
         /// <param name="figmaFile"></param>
         /// <returns></returns>
-        public static string GetFullPathForNode(Node node,FigmaFile figmaFile)
+        public static string GetFullPathForNode(Node node, FigmaFile figmaFile)
         {
             var pathStack = new Stack<string>();
-            var found=GetPathForNodeRecursive(figmaFile.document, node,pathStack );
-            return string.Join("/",pathStack.Reverse());
+            var found = GetPathForNodeRecursive(figmaFile.document, node, pathStack);
+            return string.Join("/", pathStack.Reverse());
         }
-        
+
         /// <summary>
         /// Recursively search for a node in a figma file and push/pop to stack to track heirarchy
         /// </summary>
@@ -182,18 +183,18 @@ namespace UnityFigmaBridge.Editor.FigmaApi
                     if (GetPathForNodeRecursive(childNode, targetNode, pathStack)) return true;
                 }
             }
+
             pathStack.Pop(); // Not found, remove from stack
             return false;
         }
-       
-        
-        
+
+
         /// <summary>
         /// Replace any characters that are invlid for saving
         /// </summary>
         /// <param name="NodeId"></param>
         /// <returns></returns>
-        public static string ReplaceUnsafeFileCharactersForNodeId (string NodeId)
+        public static string ReplaceUnsafeFileCharactersForNodeId(string NodeId)
         {
             return NodeId.Replace(":", "_");
         }
@@ -205,14 +206,15 @@ namespace UnityFigmaBridge.Editor.FigmaApi
         /// <param name="file"></param>
         /// <param name="downloadPageIdList"></param>
         /// <returns></returns>
-        public static List<string> GetAllImageFillIdsFromFile(FigmaFile file, List<string> downloadPageIdList,List<string> imageFileNames)
+        public static List<string> GetAllImageFillIdsFromFile(FigmaFile file, List<string> downloadPageIdList)
         {
             var imageFillIdList = new List<string>();
             foreach (var page in file.document.children)
             {
-                var includedPage=downloadPageIdList.Contains(page.id);
-                GetAllImageFillIdsForNode(page, imageFillIdList,imageFileNames,0,includedPage,false);
+                var includedPage = downloadPageIdList.Contains(page.id);
+                GetAllImageFillIdsForNode(page, imageFillIdList, 0, includedPage, false);
             }
+
             return imageFillIdList;
         }
 
@@ -224,11 +226,11 @@ namespace UnityFigmaBridge.Editor.FigmaApi
         /// <param name="recursiveDepth"></param>
         /// <param name="includedPage"></param>
         /// <param name="withinComponentDefinition"></param>
-        private static void GetAllImageFillIdsForNode(Node node, List<string> imageFillList,List<string> iamgeFileNames,int recursiveDepth,
-            bool includedPage, bool withinComponentDefinition )
+        private static void GetAllImageFillIdsForNode(Node node, List<string> imageFillList, int recursiveDepth,
+            bool includedPage, bool withinComponentDefinition)
         {
             // We want to ignore random images placed on the root not in frames as they might be simple reference images
-            var ignoreNodeFill = recursiveDepth <=1 && node.type != NodeType.FRAME && node.type != NodeType.COMPONENT;
+            var ignoreNodeFill = recursiveDepth <= 1 && node.type != NodeType.FRAME && node.type != NodeType.COMPONENT;
             // We'll also ignore if this page is not included in the download list and we're not within a component definition
             if (!includedPage && !withinComponentDefinition) ignoreNodeFill = true;
             if (node.fills != null && !ignoreNodeFill)
@@ -239,20 +241,19 @@ namespace UnityFigmaBridge.Editor.FigmaApi
                     if (string.IsNullOrEmpty(fill.imageRef)) continue;
                     var imageRefId = fill.imageRef;
                     if (!imageFillList.Contains(imageRefId)) imageFillList.Add(imageRefId);
-                    if(!iamgeFileNames.Contains(node.name)) iamgeFileNames.Add(node.name);
                 }
             }
 
             // If this is a component, mark it as so for all children (to ensure included)
             if (node.type == NodeType.COMPONENT) withinComponentDefinition = true;
-            
+
             //  Recursively cycle through all children
             if (node.children == null) return;
             foreach (var childNode in node.children)
-                GetAllImageFillIdsForNode(childNode, imageFillList,iamgeFileNames,recursiveDepth+1,includedPage,withinComponentDefinition);
-            
+                GetAllImageFillIdsForNode(childNode, imageFillList, recursiveDepth + 1, includedPage,
+                    withinComponentDefinition);
         }
-        
+
         /// <summary>
         /// Recursively search for nodes of a specific type
         /// </summary>
@@ -260,14 +261,14 @@ namespace UnityFigmaBridge.Editor.FigmaApi
         /// <param name="nodeType"></param>
         /// <param name="nodeList"></param>
         /// <param name="nodeDepth"></param>
-        public static void FindAllNodesOfType(Node node,NodeType nodeType,List<Node> nodeList,
+        public static void FindAllNodesOfType(Node node, NodeType nodeType, List<Node> nodeList,
             int nodeDepth)
         {
-            if (node.type == nodeType)  nodeList.Add(node);
+            if (node.type == nodeType) nodeList.Add(node);
             if (node.children == null) return;
 
             foreach (var childNode in node.children)
-                FindAllNodesOfType(childNode, nodeType,nodeList,nodeDepth+1);
+                FindAllNodesOfType(childNode, nodeType, nodeList, nodeDepth + 1);
         }
 
         /// <summary>
@@ -277,13 +278,13 @@ namespace UnityFigmaBridge.Editor.FigmaApi
         /// <param name="componentId"></param>
         /// <param name="nodeList"></param>
         /// <param name="nodeDepth"></param>
-        private static void FindAllComponentInstances(Node node,string componentId,List<Node> nodeList, int nodeDepth)
+        private static void FindAllComponentInstances(Node node, string componentId, List<Node> nodeList, int nodeDepth)
         {
-            if (node.type == NodeType.INSTANCE && node.componentId==componentId)  nodeList.Add(node);
+            if (node.type == NodeType.INSTANCE && node.componentId == componentId) nodeList.Add(node);
             if (node.children == null) return;
 
             foreach (var childNode in node.children)
-                FindAllComponentInstances(childNode, componentId,nodeList,nodeDepth+1);
+                FindAllComponentInstances(childNode, componentId, nodeList, nodeDepth + 1);
         }
 
 
@@ -301,11 +302,32 @@ namespace UnityFigmaBridge.Editor.FigmaApi
             // Process each canvas
             foreach (var page in file.document.children)
             {
-                var isSelectedPage=downloadPageIdList.Contains(page.id);
-                AddRenderSubstitutionsForFigmaNode(page, renderSubstitutionNodeList, 0,missingComponentIds,isSelectedPage,false);
+                var isSelectedPage = downloadPageIdList.Contains(page.id);
+                AddRenderSubstitutionsForFigmaNode(page, renderSubstitutionNodeList, 0, missingComponentIds,
+                    isSelectedPage, false);
             }
 
             return renderSubstitutionNodeList;
+        }
+
+        public static List<Node> FindAllExportNodeInFile(FigmaFile file, List<string> downloadPageIdList)
+        {
+            var nodes = new List<Node>();
+            foreach (var page in file.document.children)
+            {
+                var isSelectedPage = downloadPageIdList.Contains(page.id);
+                if(!isSelectedPage)
+                    continue;
+                foreach (var node in page.children)
+                {
+                    if (node.name == "ExportGroup")
+                    {
+                        nodes.AddRange(node.children);
+                    }
+                }
+            }
+
+            return nodes;
         }
 
         /// <summary>
@@ -319,16 +341,18 @@ namespace UnityFigmaBridge.Editor.FigmaApi
         /// <param name="withinComponentDefinition"></param>
         private static void AddRenderSubstitutionsForFigmaNode(Node figmaNode,
             List<ServerRenderNodeData> substitutionNodeList, int recursiveNodeDepth, List<string> missingComponentIds,
-            bool isSelectedPage,bool withinComponentDefinition)
+            bool isSelectedPage, bool withinComponentDefinition)
         {
             // Instances will already be defined by original prefab (eg that may already be rendered). Also dont attempt to render invisible nodes
-            if (figmaNode.type == NodeType.INSTANCE && !missingComponentIds.Contains(figmaNode.componentId) || !figmaNode.visible) return;
-            
-            // Top level frames should be checked for server-side rendering
-            if ((isSelectedPage || withinComponentDefinition) && recursiveNodeDepth==1 && figmaNode.exportSettings!=null && figmaNode.exportSettings.Length > 0)
+            if (figmaNode.type == NodeType.INSTANCE && !missingComponentIds.Contains(figmaNode.componentId) ||
+                !figmaNode.visible) return;
+
+            // Top level frames should be checked for server-side rendering 也就是一个界面的整个是否要导出一个图片
+            if ((isSelectedPage || withinComponentDefinition) && recursiveNodeDepth == 1 &&
+                figmaNode.exportSettings != null && figmaNode.exportSettings.Length > 0)
             {
                 Debug.Log($"Found figmaNode with export! Node {figmaNode.name}");
-                substitutionNodeList.Add( new ServerRenderNodeData
+                substitutionNodeList.Add(new ServerRenderNodeData
                 {
                     RenderType = ServerRenderType.Export,
                     SourceNode = figmaNode
@@ -336,25 +360,26 @@ namespace UnityFigmaBridge.Editor.FigmaApi
                 return;
             }
 
-            
-            if ((isSelectedPage || withinComponentDefinition) && GetNodeSubstitutionStatus(figmaNode,recursiveNodeDepth))
+
+            if ((isSelectedPage || withinComponentDefinition) &&
+                GetNodeSubstitutionStatus(figmaNode, recursiveNodeDepth))
             {
-                substitutionNodeList.Add( new ServerRenderNodeData
+                substitutionNodeList.Add(new ServerRenderNodeData
                 {
                     RenderType = ServerRenderType.Substitution,
                     SourceNode = figmaNode
                 });
                 return;
             }
-            
+
             if (figmaNode.children == null) return;
 
             // If this is a component, we want to ensure we include all server render components within (even if the page is ignored)
             if (figmaNode.type == NodeType.COMPONENT) withinComponentDefinition = true;
-            
+
             foreach (var childNode in figmaNode.children)
-                AddRenderSubstitutionsForFigmaNode(childNode, substitutionNodeList,recursiveNodeDepth+1,missingComponentIds,isSelectedPage,withinComponentDefinition);
-            
+                AddRenderSubstitutionsForFigmaNode(childNode, substitutionNodeList, recursiveNodeDepth + 1,
+                    missingComponentIds, isSelectedPage, withinComponentDefinition);
         }
 
         /// <summary>
@@ -363,12 +388,12 @@ namespace UnityFigmaBridge.Editor.FigmaApi
         /// <param name="node"></param>
         /// <param name="recursiveNodeDepth"></param>
         /// <returns></returns>
-        private static bool GetNodeSubstitutionStatus(Node node,int recursiveNodeDepth)
+        private static bool GetNodeSubstitutionStatus(Node node, int recursiveNodeDepth)
         {
             // We never substitute screens or pages
             if (node.type == NodeType.CANVAS) return false;
-            if (recursiveNodeDepth <=1 && node.type== NodeType.FRAME) return false;
-            
+            if (recursiveNodeDepth <= 1 && node.type == NodeType.FRAME) return false;
+
             // If a given node has the word "render", mark for rendering
             if (node.name.ToLower().Contains("render")) return true;
 
@@ -383,13 +408,14 @@ namespace UnityFigmaBridge.Editor.FigmaApi
             // The pattern we identify for server side vector rendering is:
             // * At least one sub nodes of type vector
             // * Only containing sub nodes of type VECTOR, FRAME, GROUP, COMPONENT, INSTANCE
-            var validNodeTypesForVectorRender = new NodeType[] { NodeType.VECTOR, NodeType.GROUP, NodeType.FRAME, NodeType.COMPONENT, NodeType.INSTANCE };
+            var validNodeTypesForVectorRender = new NodeType[]
+                { NodeType.VECTOR, NodeType.GROUP, NodeType.FRAME, NodeType.COMPONENT, NodeType.INSTANCE };
             var nodeTypeCount = new int[validNodeTypesForVectorRender.Length];
             var onlyValidNodeTypesFound =
                 GetNodeChildrenExclusivelyOfTypes(node, validNodeTypesForVectorRender, nodeTypeCount);
-            
-            if (onlyValidNodeTypesFound && nodeTypeCount[0]>0) return true;
-            
+
+            if (onlyValidNodeTypesFound && nodeTypeCount[0] > 0) return true;
+
             return false;
         }
 
@@ -400,11 +426,11 @@ namespace UnityFigmaBridge.Editor.FigmaApi
         /// <param name="nodeTypes"></param>
         /// <param name="nodeTypeCount"></param>
         /// <returns></returns>
-        private static bool GetNodeChildrenExclusivelyOfTypes(Node node, NodeType[] nodeTypes,int[] nodeTypeCount)
+        private static bool GetNodeChildrenExclusivelyOfTypes(Node node, NodeType[] nodeTypes, int[] nodeTypeCount)
         {
             // If this doesnt match return false
             if (!nodeTypes.Contains(node.type)) return false;
-            
+
             // Increment count for matching node type for this node
             for (var i = 0; i < nodeTypes.Length; i++)
             {
@@ -417,6 +443,7 @@ namespace UnityFigmaBridge.Editor.FigmaApi
                 var isMatching = GetNodeChildrenExclusivelyOfTypes(childNode, nodeTypes, nodeTypeCount);
                 if (!isMatching) return false;
             }
+
             return true;
         }
 
@@ -426,7 +453,12 @@ namespace UnityFigmaBridge.Editor.FigmaApi
         /// <returns></returns>
         public static List<string> FindMissingComponentDefinitions(FigmaFile file)
         {
-            return (from componentKeyPair in file.components select componentKeyPair.Key into componentId let foundNode = GetFigmaNodeWithId(file, componentId) where foundNode == null select componentId).ToList();
+            return (from componentKeyPair in file.components
+                select componentKeyPair.Key
+                into componentId
+                let foundNode = GetFigmaNodeWithId(file, componentId)
+                where foundNode == null
+                select componentId).ToList();
         }
 
         /// <summary>
@@ -440,7 +472,7 @@ namespace UnityFigmaBridge.Editor.FigmaApi
             {
                 var allInstances = new List<Node>();
                 FindAllComponentInstances(figmaFile.document, componentId, allInstances, 0);
-                if (allInstances.Count==0) continue;
+                if (allInstances.Count == 0) continue;
                 var firstInstance = allInstances[0];
                 firstInstance.type = NodeType.COMPONENT;
                 // Remap all other instances to use this component
@@ -460,7 +492,7 @@ namespace UnityFigmaBridge.Editor.FigmaApi
         {
             foreach (var canvasNode in sourceFile.document.children)
             {
-                if (canvasNode.flowStartingPoints.Length>0) return canvasNode.flowStartingPoints[0].nodeId;
+                if (canvasNode.flowStartingPoints.Length > 0) return canvasNode.flowStartingPoints[0].nodeId;
             }
 
             return string.Empty;
@@ -477,11 +509,13 @@ namespace UnityFigmaBridge.Editor.FigmaApi
             foreach (var canvasNode in sourceFile.document.children)
             {
                 if (canvasNode.flowStartingPoints == null) continue;
-                allFlowStartingPoints.AddRange(canvasNode.flowStartingPoints.Select(flowStartingPoint => flowStartingPoint.nodeId));
+                allFlowStartingPoints.AddRange(
+                    canvasNode.flowStartingPoints.Select(flowStartingPoint => flowStartingPoint.nodeId));
             }
+
             return allFlowStartingPoints;
         }
-        
+
         /// <summary>
         /// Lists all Page Nodes in a given Figma file
         /// </summary>
@@ -494,12 +528,13 @@ namespace UnityFigmaBridge.Editor.FigmaApi
             {
                 pageNodes.Add(canvasNode);
             }
+
             return pageNodes;
         }
 
         private static void SearchScreenNodes(Node node, Node parentNode, List<Node> screenNodes)
         {
-            if (IsScreenNode(node,parentNode))
+            if (IsScreenNode(node, parentNode))
             {
                 screenNodes.Add(node);
             }
@@ -524,6 +559,7 @@ namespace UnityFigmaBridge.Editor.FigmaApi
             {
                 SearchScreenNodes(node, null, screenNodes);
             }
+
             return screenNodes;
         }
 

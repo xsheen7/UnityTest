@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 using UnityFigmaBridge.Editor.FigmaApi;
 
 namespace UnityFigmaBridge.Editor.Settings
@@ -36,6 +38,12 @@ namespace UnityFigmaBridge.Editor.Settings
         
         [Tooltip("If false, the generator will not attempt to build any nodes marked for export")]
         public bool GenerateNodesMarkedForExport = true;
+        
+        // [Tooltip("If true, use TextMeshPro for text elements instead of Unity Text component. Requires TextMeshPro package installed.")]
+        // public bool UseTextMeshPro = false;
+
+        [Tooltip("Game font to use for TextMeshPro")]
+        public TMP_FontAsset GameFont;
         
         [Tooltip("If true, download only selected pages and screens")]
         public bool OnlyImportSelectedPages = false;
