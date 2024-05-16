@@ -327,6 +327,14 @@ namespace UnityFigmaBridge.Editor.FigmaApi
                 }
             }
 
+            foreach (var node in nodes)
+            {
+                if (node.exportSettings == null)
+                {
+                    node.exportSettings = new ExportSetting[]{};
+                }
+            }
+
             return nodes;
         }
 
@@ -361,15 +369,15 @@ namespace UnityFigmaBridge.Editor.FigmaApi
             }
 
 
-            if ((isSelectedPage || withinComponentDefinition) &&
-                GetNodeSubstitutionStatus(figmaNode, recursiveNodeDepth))
+            if ((isSelectedPage || withinComponentDefinition) && figmaNode.exportSettings!=null)
+                //GetNodeSubstitutionStatus(figmaNode, recursiveNodeDepth))
             {
                 substitutionNodeList.Add(new ServerRenderNodeData
                 {
                     RenderType = ServerRenderType.Substitution,
                     SourceNode = figmaNode
                 });
-                return;
+                // return;
             }
 
             if (figmaNode.children == null) return;

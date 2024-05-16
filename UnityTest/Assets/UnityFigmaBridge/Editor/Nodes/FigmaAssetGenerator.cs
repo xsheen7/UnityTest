@@ -95,6 +95,8 @@ namespace UnityFigmaBridge.Editor.Nodes
 
         private static bool CheckNodeValidForGeneration(Node node, FigmaImportProcessData figmaImportProcessData)
         {
+            if (!node.visible)
+                return false;
             return figmaImportProcessData.Settings.GenerateNodesMarkedForExport || node.exportSettings == null || node.exportSettings.Length == 0;
         }
 
@@ -114,6 +116,8 @@ namespace UnityFigmaBridge.Editor.Nodes
         private static GameObject BuildFigmaNode(Node figmaNode, RectTransform parentTransform,  Node parentFigmaNode,
             int nodeRecursionDepth, FigmaImportProcessData figmaImportProcessData,bool includedPageObject, bool withinComponentDefinition)
         {
+            if (!figmaNode.visible)
+                return null;
 
             // Create a gameObject for this figma node and parent to parent transform
             var nodeGameObject = new GameObject(figmaNode.name, typeof(RectTransform));

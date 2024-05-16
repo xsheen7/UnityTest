@@ -31,7 +31,7 @@ namespace UnityFigmaBridge.Editor.FigmaApi
 
     public static class FigmaApiUtils
     {
-        private static string WRITE_FILE_PATH = "UnityFigmaBridge/FigmaOutput.json";
+        private static string WRITE_FILE_PATH = "Figma/FigmaOutput.json";
 
         /// <summary>
         /// Encapsulate download data
@@ -58,7 +58,7 @@ namespace UnityFigmaBridge.Editor.FigmaApi
         public static (bool, string) GetFigmaDocumentIdFromUrl(string url)
         {
             // Format is https://www.figma.com/file/{DOC_ID}/{NAME}?node-id={NODE}
-            var initialSection = "https://www.figma.com/file/";
+            var initialSection = "https://www.figma.com/design/";
             if (url.IndexOf(initialSection, StringComparison.Ordinal) != 0) return (false, "");
             var remainder = url.Substring(initialSection.Length);
             var nextSeperatorIndex = remainder.IndexOf('/');
@@ -111,6 +111,12 @@ namespace UnityFigmaBridge.Editor.FigmaApi
                 throw new Exception($"Problem decoding Figma document JSON {e.ToString()}");
             }
 
+            string figmaFolder = Path.Combine("Assets", "Figma");
+            if (!Directory.Exists(figmaFolder))
+            {
+                // 创建目录
+                Directory.CreateDirectory(figmaFolder);
+            }
             if (writeFile) File.WriteAllText(Path.Combine("Assets", WRITE_FILE_PATH), webRequest.downloadHandler.text);
             return figmaFile;
         }

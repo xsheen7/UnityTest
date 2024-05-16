@@ -531,15 +531,6 @@ namespace UnityFigmaBridge.Editor
                 if (UnityFigmaBridgeSettings.CreateScreenNameCSharpFile) ScreenNameCodeGenerator.WriteScreenNamesCodeFile(figmaBridgeProcessData.ScreenPrefabs);
             }
             
-            //todo 将需要导出的图片单独列出来命名,移动到新的文件夹
-            // foreach (var node in exportGroupNodes)
-            // {
-            //     if (node.fills != null)
-            //     {
-            //         
-            //     }
-            // }
-            
             CleanUpPostGeneration();
             EditorUtility.ClearProgressBar();
             AssetDatabase.Refresh();

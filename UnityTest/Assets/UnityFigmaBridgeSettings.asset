@@ -12,21 +12,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 119c1bd3601648f28a252a6030e067b6, type: 3}
   m_Name: UnityFigmaBridgeSettings
   m_EditorClassIdentifier: 
-  DocumentUrl: https://www.figma.com/file/JcYcbU2NtURB3VbnWlhbm8/Figma-Unity-Bridge-Example-mine?type=design&node-id=0%3A1&mode=design&t=5lvjTlHHm3fk0i5T-1
+  DocumentUrl: https://www.figma.com/design/oABweAwLpXU8ah5jGCm9mJ/Crime-scene?node-id=12-2384&t=z9lDyCU2Kvfn3Mue-0
   BuildPrototypeFlow: 0
   RunTimeAssetsScenePath: Assets/FigmaTest/Test.unity
   EnableAutoLayout: 0
   ScreenBindingNamespace: 
-  ServerRenderImageScale: 3
-  EnableGoogleFontsDownloads: 0
+  ServerRenderImageScale: 1
+  EnableGoogleFontsDownloads: 1
   CreateScreenNameCSharpFile: 0
   GenerateNodesMarkedForExport: 1
-  GameFont: {fileID: 11400000, guid: 0161d805a3764c089bef00bfe00793f5, type: 2}
+  GameFont: {fileID: 0}
   OnlyImportSelectedPages: 1
   PageDataList:
   - Name: Page 1
     NodeId: 0:1
     Selected: 0
   - Name: Page 2
-    NodeId: 806:590
+    NodeId: 19:2873
     Selected: 1
+  - Name: ---
+    NodeId: 4:664
+    Selected: 0
+  - Name: draft
+    NodeId: 4:665
+    Selected: 0
