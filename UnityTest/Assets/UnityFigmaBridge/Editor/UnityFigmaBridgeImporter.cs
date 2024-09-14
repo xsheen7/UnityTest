@@ -360,6 +360,10 @@ namespace UnityFigmaBridge.Editor
             }
             */
 
+            //查找带有ExportGroup的Frame，里面的是所有需要导出的图片
+            FigmaPaths.imageExportReferDic.Clear();
+            var exportGroupNodes = FigmaDataUtils.FindAllExportNodeInFile(figmaFile,downloadPageIdList);
+            
             // For any missing component definitions, we are going to find the first instance and switch it to be
             // The source component. This has to be done early to ensure download of server images
             //FigmaFileUtils.ReplaceMissingComponents(figmaFile,externalComponentList);
@@ -419,10 +423,6 @@ namespace UnityFigmaBridge.Editor
                 ReportError("Error downloading Figma Image Fill Data",e.ToString());
                 return;
             }
-            
-            //查找带有ExportGroup的Frame，里面的是所有需要导出的图片
-            FigmaPaths.imageExportReferDic.Clear();
-            var exportGroupNodes = FigmaDataUtils.FindAllExportNodeInFile(figmaFile,downloadPageIdList);
             
             // Generate a list of all items that need to be downloaded
             var downloadList =

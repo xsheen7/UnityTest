@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using UnityEditor;
@@ -254,26 +255,27 @@ namespace UnityFigmaBridge.Editor.FigmaApi
             List<FigmaDownloadQueueItem> downloadList = new List<FigmaDownloadQueueItem>();
             foreach (var keyPair in imageFillData.meta.images)
             {
-                // Only download if it is used in the document and not already downloaded
-                if (foundImageFills.Contains(keyPair.Key) && !File.Exists(FigmaPaths.GetPathForImageFill(keyPair.Key)))
+                //导出的图片名字改为ExportGroup中的资源明
+                string path = FigmaPaths.GetPathForImageFill(keyPair.Key);
+                foreach (var exportNode in exportNodes)
                 {
-                    //导出的图片名字改为
-                    string path = FigmaPaths.GetPathForImageFill(keyPair.Key);
-                    foreach (var exportNode in exportNodes)
+                    if (exportNode.fills != null)
                     {
-                        if (exportNode.fills != null)
+                        foreach (var fill in exportNode.fills)
                         {
-                            foreach (var fill in exportNode.fills)
+                            //导出的节点必须单独的节点，没有其他额外的
+                            if (fill.imageRef == keyPair.Key)
                             {
-                                if (fill.imageRef == keyPair.Key)
-                                {
-                                    path = FigmaPaths.GetPathForExportImage(exportNode.name);
-                                    break;
-                                }
+                                path = FigmaPaths.GetPathForExportImage(exportNode.name);
+                                break;
                             }
                         }
                     }
-
+                }
+                
+                // Only download if it is used in the document and not already downloaded
+                if (foundImageFills.Contains(keyPair.Key) && !File.Exists(path))
+                {
                     FigmaPaths.imageExportReferDic.TryAdd(keyPair.Key, path);
 
                     downloadList.Add(new FigmaDownloadQueueItem
@@ -290,6 +292,8 @@ namespace UnityFigmaBridge.Editor.FigmaApi
             {
                 foreach (var keyPair in serverRenderDataEntry.images)
                 {
+                    bool exportNodeReUse = false;
+                    
                     if (string.IsNullOrEmpty(keyPair.Value))
                     {
                         // if the url is invalid...
@@ -297,6 +301,7 @@ namespace UnityFigmaBridge.Editor.FigmaApi
                     }
                     else
                     {
+                        //所有导出的节点
                         string path = FigmaPaths.GetPathForServerRenderedImage(keyPair.Key, serverRenderNodes);
                         foreach (var exportNode in exportNodes)
                         {
@@ -305,19 +310,32 @@ namespace UnityFigmaBridge.Editor.FigmaApi
                                 if (exportNode.id == keyPair.Key)
                                 {
                                     path = FigmaPaths.GetPathForExportImage(exportNode.name);
-                                    FigmaPaths.imageExportReferDic.TryAdd(exportNode.id, path);
+                                    FigmaPaths.imageExportReferDic.TryAdd(exportNode.name, path);
                                     break;
+                                }
+                                else
+                                {
+                                    //复用的节点 不再导出资源了
+                                    var matchingEntry = serverRenderNodes.FirstOrDefault((node) => node.SourceNode.id == keyPair.Key);
+
+                                    if (matchingEntry != null && exportNode.name == matchingEntry.SourceNode.name)
+                                    {
+                                        exportNodeReUse = true;
+                                    }
                                 }
                             }
                         }
 
-                        // Always overwrite as may have changed
-                        downloadList.Add(new FigmaDownloadQueueItem
+                        if (!exportNodeReUse)
                         {
-                            Url = keyPair.Value,
-                            FilePath = path,
-                            FileType = FigmaDownloadQueueItem.FigmaFileType.ServerRenderedImage
-                        });
+                            // Always overwrite as may have changed
+                            downloadList.Add(new FigmaDownloadQueueItem
+                            {
+                                Url = keyPair.Value,
+                                FilePath = path,
+                                FileType = FigmaDownloadQueueItem.FigmaFileType.ServerRenderedImage
+                            });
+                        }
                     }
                 }
             }

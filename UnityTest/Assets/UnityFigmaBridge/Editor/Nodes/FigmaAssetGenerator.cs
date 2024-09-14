@@ -159,12 +159,17 @@ namespace UnityFigmaBridge.Editor.Nodes
             
             if (matchingServerRenderEntry!=null)
             {
+                //todo server image需要名字一致，才可以复用资源，否则会使用自动生成的图片资源，导出的 key 存节点名字
                 // Attach a simple image node (no need for custom renderer)
-                FigmaPaths.imageExportReferDic.TryGetValue(figmaNode.id, out string path);
+                FigmaPaths.imageExportReferDic.TryGetValue(figmaNode.name, out string path);
                 if (string.IsNullOrEmpty(path))
                 {
                     path = FigmaPaths.GetPathForServerRenderedImage(figmaNode.id,
                         figmaImportProcessData.ServerRenderNodes);
+                }
+                else
+                {
+                    Debug.Log("test server node");
                 }
 
                 nodeGameObject.AddComponent<Image>().sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);

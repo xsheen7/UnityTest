@@ -369,15 +369,14 @@ namespace UnityFigmaBridge.Editor.FigmaApi
             }
 
 
-            if ((isSelectedPage || withinComponentDefinition) && figmaNode.exportSettings!=null)
-                //GetNodeSubstitutionStatus(figmaNode, recursiveNodeDepth))
+            if ((isSelectedPage || withinComponentDefinition) && figmaNode.exportSettings!=null || GetNodeSubstitutionStatus(figmaNode, recursiveNodeDepth))
             {
                 substitutionNodeList.Add(new ServerRenderNodeData
                 {
                     RenderType = ServerRenderType.Substitution,
                     SourceNode = figmaNode
                 });
-                // return;
+                return;
             }
 
             if (figmaNode.children == null) return;
