@@ -25,47 +25,47 @@ public static class Debug
 }
 #endif
 
-
-//重载默认Debug
-public static class Debugger
+namespace FrameTest
 {
-    public static void Log(object message)
+    //重载默认Debug
+    public static class Debugger
     {
-        #if RELEASE_BUILD
-        #else
+        public static void Log(object message)
+        {
+#if RELEASE_BUILD
+#else
             if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer)
                 DebugManager.Log(message.ToString());
             else
                 UnityEngine.Debug.Log(message.ToString());
 
-         #endif
-    }
+#endif
+        }
 
-    public static void LogError(object message)
-    {
-        #if RELEASE_BUILD
-        #else
-        if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer)
-            DebugManager.Log(message.ToString());
-        else
-            UnityEngine.Debug.LogError(message.ToString());
-        #endif
-    }
+        public static void LogError(object message)
+        {
+#if RELEASE_BUILD
+#else
+            if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer)
+                DebugManager.Log(message.ToString());
+            else
+                UnityEngine.Debug.LogError(message.ToString());
+#endif
+        }
 
 
-    public static void LogWarning(object message)
-    {
-        #if RELEASE_BUILD
-        #else
-        if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer)
-            DebugManager.Log(message.ToString());
-        else
-            UnityEngine.Debug.LogWarning(message.ToString());
-        #endif
+        public static void LogWarning(object message)
+        {
+#if RELEASE_BUILD
+#else
+            if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer)
+                DebugManager.Log(message.ToString());
+            else
+                UnityEngine.Debug.LogWarning(message.ToString());
+#endif
+        }
     }
 }
-
-
 
 //[yaz]调试管理器
 public class DebugManager : MonoBehaviour 

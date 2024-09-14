@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using System;
 using AssetBundles;
+using FrameTest;
 
 public class UI_ctrl : MonoBehaviour {
     public Dictionary<string, GameObject> view = new Dictionary<string, GameObject>();
